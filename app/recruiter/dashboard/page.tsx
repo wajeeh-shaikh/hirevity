@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/app/providers'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import { Search, Filter, Users, CreditCard, Eye, Unlock, MapPin, Calendar, Star } from 'lucide-react'
 import Link from 'next/link'
 
@@ -40,7 +40,10 @@ export default function RecruiterDashboard() {
     experience: '',
     jobType: 'any'
   })
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
   useEffect(() => {
     if (user) {

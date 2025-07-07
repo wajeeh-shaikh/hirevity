@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import { Eye, EyeOff, Users, ArrowLeft, UserCheck, Search } from 'lucide-react'
 
 export default function RegisterPage() {
@@ -20,7 +20,10 @@ export default function RegisterPage() {
   
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
   useEffect(() => {
     const type = searchParams.get('type')

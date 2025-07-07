@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -15,10 +15,11 @@ serve(async (req) => {
     const { userId, resumeUrl } = await req.json()
 
     // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+   // Initialize Supabase client
+const supabaseClient = createClient(
+  process.env.SUPABASE_URL ?? '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''
+)
 
     // Fetch the PDF file
     const response = await fetch(resumeUrl)
@@ -53,8 +54,9 @@ serve(async (req) => {
       }
     )
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: message }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,

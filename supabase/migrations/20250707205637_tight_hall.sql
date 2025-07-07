@@ -52,12 +52,13 @@ CREATE TABLE IF NOT EXISTS profiles (
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can read and update their own profile
+-- Policy: Users can read, insert, and update their own profile
 CREATE POLICY "Users can manage own profile"
   ON profiles
   FOR ALL
   TO authenticated
-  USING (auth.uid() = id);
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 -- Policy: Recruiters can view visible candidate profiles (not hidden, not blocked)
 CREATE POLICY "Recruiters can view available candidates"
