@@ -25,28 +25,50 @@ export default function LoginPage() {
     setError('')
 
     try {
+      console.log('Starting login process...')
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      console.log('Logged in user:', data.user)
+      console.log('Login result:', { user: data.user?.id, error })
 
       if (error) throw error
 
-      // Get user profile to determine redirect
-      const { data: profile } = await supabase
+      if (data.user) {
+        console.log('Getting user profile for redirect...')
+        
+        // Get user profile to determine redirect
+        const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
         .eq('id', data.user.id)
         .single()
 
       if (profile?.user_type === 'recruiter') {
-        router.push('/recruiter/dashboard')
+        if (profileError) {
+          console.error('Profile fetch error:', profileError)
+          throw new Error('Could not fetch user profile')
+        }
+
+        console.log('User profile:', profile)
+
+        // Wait a moment for session to be established
+        await new Promise(resolve => setTimeout(resolve, 500))
+
+        if (profile?.user_type === 'recruiter') {
+          console.log('Redirecting to recruiter dashboard')
+          router.push('/recruiter/dashboard')
+        } else {
+          console.log('Redirecting to candidate dashboard')
+          router.push('/candidate/dashboard')
+        }
       } else {
-        router.push('/candidate/dashboard')
+        throw new Error('Login failed - no user returned')
       }
     } catch (error: any) {
+      console.error('Login error:', error)
       setError(error.message)
     } finally {
       setLoading(false)
