@@ -21,9 +21,9 @@ export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   useEffect(() => {
     const type = searchParams.get('type')
@@ -50,7 +50,8 @@ export default function RegisterPage() {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Step 1: Sign up the user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -62,23 +63,40 @@ export default function RegisterPage() {
         }
       })
 
-      if (error) throw error
+      if (authError) throw authError
 
-      if (data.user) {
-        // Create profile record
+      if (authData.user) {
+        // Step 2: Create profile record manually (since we can't modify migrations)
+        const profileData = {
+          id: authData.user.id,
+          email: email,
+          full_name: fullName,
+          user_type: userType,
+          company: userType === 'recruiter' ? company : null,
+          credits_remaining: userType === 'recruiter' ? 50 : 0,
+          unlocks_used: 0,
+          views_count: 0,
+          unlocks_count: 0,
+          is_hidden: false,
+          skills: [],
+          blocked_companies: [],
+          experience_years: 0,
+          location: '',
+          resume_parsed: false
+        }
+
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: email,
-            full_name: fullName,
-            user_type: userType,
-            company: userType === 'recruiter' ? company : null,
-          })
+          .insert(profileData)
 
-        if (profileError) throw profileError
+        if (profileError) {
+          console.error('Profile creation error:', profileError)
+          throw new Error('Failed to create profile. Please try again.')
+        }
 
-        // Redirect based on user type
+        // Step 3: Redirect based on user type
+        console.log('Registration successful, redirecting...')
+        
         if (userType === 'recruiter') {
           router.push('/recruiter/dashboard')
         } else {
@@ -86,7 +104,8 @@ export default function RegisterPage() {
         }
       }
     } catch (error: any) {
-      setError(error.message)
+      console.error('Registration error:', error)
+      setError(error.message || 'Registration failed. Please try again.')
     } finally {
       setLoading(false)
     }
