@@ -57,12 +57,8 @@ export function HowItWorks() {
             <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">For Job Seekers</h3>
             <div className="space-y-8">
               {candidateSteps.map((step, index) => (
-                <motion.div
+                <div
                   key={step.title}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.2 }}
-                  viewport={{ once: true }}
                   className="flex items-start space-x-4"
                 >
                   <div className="bg-primary-600 text-white w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
@@ -72,7 +68,7 @@ export function HowItWorks() {
                     <h4 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h4>
                     <p className="text-gray-600">{step.description}</p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -82,12 +78,8 @@ export function HowItWorks() {
             <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">For Recruiters</h3>
             <div className="space-y-8">
               {recruiterSteps.map((step, index) => (
-                <motion.div
+                <div
                   key={step.title}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.2 }}
-                  viewport={{ once: true }}
                   className="flex items-start space-x-4"
                 >
                   <div className="bg-primary-600 text-white w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
@@ -97,7 +89,7 @@ export function HowItWorks() {
                     <h4 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h4>
                     <p className="text-gray-600">{step.description}</p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>

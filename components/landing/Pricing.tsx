@@ -1,7 +1,6 @@
 'use client'
 
 import { Check, Star } from 'lucide-react'
-import { motion } from 'framer-motion'
 import Link from 'next/link'
 
 const plans = [
@@ -68,12 +67,8 @@ export function Pricing() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
-            <motion.div
+            <div
               key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
               className={`card relative ${plan.popular ? 'ring-2 ring-primary-500 scale-105' : ''}`}
             >
               {plan.popular && (
@@ -113,7 +108,7 @@ export function Pricing() {
               >
                 {plan.cta}
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
 

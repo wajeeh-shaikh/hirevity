@@ -25,10 +25,11 @@ export default function CandidateDashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  
   const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   useEffect(() => {
     if (user) {
@@ -88,9 +89,13 @@ export default function CandidateDashboard() {
       if (updateError) throw updateError
 
       // Trigger AI parsing (this would be handled by an edge function)
-      await supabase.functions.invoke('parse-resume', {
-        body: { userId: user?.id, resumeUrl: publicUrl }
-      })
+      try {
+        await supabase.functions.invoke('parse-resume', {
+          body: { userId: user?.id, resumeUrl: publicUrl }
+        })
+      } catch (parseError) {
+        console.log('AI parsing not available yet')
+      }
 
       fetchProfile()
     } catch (error) {
