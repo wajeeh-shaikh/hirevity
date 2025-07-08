@@ -1,189 +1,78 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Eye, EyeOff, Users, ArrowLeft } from 'lucide-react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { User } from '@supabase/supabase-js'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  
-  const router = useRouter()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+interface AuthContextType {
+  user: User | null
+  loading: boolean
+  signOut: () => Promise<void>
+}
 
-    try {
-      console.log('Starting login process...')
-      
-      console.log('Starting login process...')
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  signOut: async () => {},
+})
 
-      console.log('Login result:', { user: data.user?.id, error })
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
 
-      if (error) throw error
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
-      if (data.user) {
-        console.log('Getting user profile for redirect...')
-        
-        // Get user profile to determine redirect
-        const { data: profile, error: profileError } = await supabase
-        
-        // Get user profile to determine redirect
-        const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', data.user.id)
-        .single()
-
-      if (profile?.user_type === 'recruiter') {
-        if (profileError) {
-          console.error('Profile fetch error:', profileError)
-          throw new Error('Could not fetch user profile')
-        }
-
-        console.log('User profile:', profile)
-
-        // Wait a moment for session to be established
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        if (profile?.user_type === 'recruiter') {
-          console.log('Redirecting to recruiter dashboard')
-          router.push('/recruiter/dashboard')
+  useEffect(() => {
+    console.log('🔄 Initializing Supabase connection...')
+    
+    const getUser = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error) {
+          console.error('❌ Error getting user:', error)
         } else {
-          console.log('Redirecting to candidate dashboard')
-          router.push('/candidate/dashboard')
+          console.log('✅ Current user:', user?.id || 'No user')
         }
-      } else {
-        throw new Error('Login failed - no user returned')
+        setUser(user)
+      } catch (error) {
+        console.error('❌ Auth initialization error:', error)
+      } finally {
+        setLoading(false)
       }
-    } catch (error: any) {
-      console.error('Login error:', error)
-      setError(error.message)
-    } finally {
-      setLoading(false)
     }
+
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔄 Auth state changed:', event, session?.user?.id || 'No user')
+        setUser(session?.user ?? null)
+        setLoading(false)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const signOut = async () => {
+    console.log('🔄 Signing out...')
+    await supabase.auth.signOut()
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link href="/" className="flex items-center justify-center space-x-2 mb-8">
-          <div className="bg-primary-600 p-2 rounded-lg">
-            <Users className="h-6 w-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold text-gray-900">TalentMatch</span>
-        </Link>
-        
-        <h2 className="text-center text-3xl font-bold text-gray-900">
-          Sign in to your account
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link href="/auth/register" className="font-medium text-primary-600 hover:text-primary-500">
-            create a new account
-          </Link>
-        </p>
-      </div>
-
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleLogin}>
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="label">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-field"
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="label">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field pr-10"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                <Link href="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                  Forgot your password?
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full btn-primary py-3 text-base"
-              >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <Link href="/" className="flex items-center justify-center text-sm text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to home
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+    <AuthContext.Provider value={{ user, loading, signOut }}>
+      {children}
+    </AuthContext.Provider>
   )
 }

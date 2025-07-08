@@ -41,12 +41,11 @@ export default function LoginPage() {
         
         // Get user profile to determine redirect
         const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', data.user.id)
-        .single()
+          .from('profiles')
+          .select('user_type')
+          .eq('id', data.user.id)
+          .single()
 
-      if (profile?.user_type === 'recruiter') {
         if (profileError) {
           console.error('Profile fetch error:', profileError)
           throw new Error('Could not fetch user profile')
