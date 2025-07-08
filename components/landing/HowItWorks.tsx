@@ -1,7 +1,6 @@
 'use client'
 
 import { Upload, Brain, Search, Unlock } from 'lucide-react'
-import { motion } from 'framer-motion'
 
 const candidateSteps = [
   {

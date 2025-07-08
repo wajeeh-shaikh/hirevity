@@ -2,19 +2,13 @@
 
 import Link from 'next/link'
 import { ArrowRight, Users, Search, Zap } from 'lucide-react'
-import { motion } from 'framer-motion'
 
 export function Hero() {
   return (
     <section className="relative bg-gradient-to-br from-primary-50 via-white to-primary-50 pt-20 pb-16 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8"
-          >
+          <div className="mb-8">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               AI-Powered Talent
               <span className="text-primary-600 block">Matching Platform</span>
@@ -23,14 +17,9 @@ export function Hero() {
               Connect exceptional talent with leading companies through intelligent matching. 
               Upload your resume, get discovered by top recruiters, or find your next hire with AI precision.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-          >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link href="/auth/register?type=candidate" className="btn-primary text-lg px-8 py-4 inline-flex items-center">
               <Users className="mr-2 h-5 w-5" />
               I'm Looking for Jobs
@@ -40,14 +29,9 @@ export function Hero() {
               <Search className="mr-2 h-5 w-5" />
               I'm Hiring Talent
             </Link>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
               <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Zap className="h-8 w-8 text-primary-600" />
@@ -69,7 +53,7 @@ export function Hero() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Smart Search</h3>
               <p className="text-gray-600">Find candidates with precise filters and match percentages</p>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

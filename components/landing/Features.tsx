@@ -1,7 +1,6 @@
 'use client'
 
 import { Shield, Brain, Filter, Eye, CreditCard, Globe } from 'lucide-react'
-import { motion } from 'framer-motion'
 
 const features = [
   {
@@ -57,12 +56,8 @@ export function Features() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <motion.div
+            <div
               key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
               className="card hover:shadow-lg transition-shadow duration-300"
             >
               <div className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center mb-4`}>
@@ -70,7 +65,7 @@ export function Features() {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h3>
               <p className="text-gray-600">{feature.description}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
