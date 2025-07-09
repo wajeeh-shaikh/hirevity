@@ -41,14 +41,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const getUser = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
-        if (error) {
+        if (error && error.name !== 'AuthSessionMissingError') {
           console.error('❌ Error getting user:', error)
-        } else {
-          console.log('✅ Current user:', user?.id || 'No user')
         }
+        console.log('✅ Current user:', user?.id || 'No user')
         setUser(user)
       } catch (error) {
-        console.error('❌ Auth initialization error:', error)
+        // Only log unexpected errors, not missing session errors
+        if (error && typeof error === 'object' && 'name' in error && error.name !== 'AuthSessionMissingError') {
+          console.error('❌ Auth initialization error:', error)
+        }
       } finally {
         setLoading(false)
       }
