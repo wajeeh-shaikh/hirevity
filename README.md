@@ -2,7 +2,7 @@
 
 A modern talent marketplace platform that connects job seekers with recruiters through AI-powered matching.
 
-## Features
+## 🚀 Features
 
 ### For Job Seekers (Candidates)
 - ✅ Upload PDF resume with AI parsing
@@ -27,16 +27,18 @@ A modern talent marketplace platform that connects job seekers with recruiters t
 - ✅ Authentication with Supabase
 - ✅ File storage for resumes
 - ✅ Real-time updates
+- ✅ Protected routes with middleware
+- ✅ Error handling and loading states
 
-## Tech Stack
+## 🛠 Tech Stack
 
 - **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL, Auth, Storage, Edge Functions)
-- **AI/ML**: Supabase Edge Functions for resume parsing
+- **Backend**: Supabase (PostgreSQL, Auth, Storage)
 - **Deployment**: Vercel (Frontend), Supabase (Backend)
 - **Styling**: Tailwind CSS with custom components
+- **Icons**: Lucide React
 
-## Getting Started
+## 🏃‍♂️ Getting Started
 
 ### Prerequisites
 - Node.js 18+ 
@@ -75,49 +77,17 @@ npm run dev
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Database Setup
+## 📊 Database Setup
 
-The platform requires the following Supabase tables:
+The platform uses Supabase with the following main tables:
 
-### Profiles Table
-```sql
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users(id) PRIMARY KEY,
-  email TEXT NOT NULL,
-  full_name TEXT NOT NULL,
-  user_type TEXT NOT NULL CHECK (user_type IN ('candidate', 'recruiter')),
-  company TEXT,
-  resume_url TEXT,
-  skills TEXT[],
-  experience_years INTEGER,
-  location TEXT,
-  is_hidden BOOLEAN DEFAULT false,
-  blocked_companies TEXT[],
-  views_count INTEGER DEFAULT 0,
-  unlocks_count INTEGER DEFAULT 0,
-  credits_remaining INTEGER DEFAULT 0,
-  unlocks_used INTEGER DEFAULT 0,
-  resume_parsed BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
+- **profiles**: User profiles for both candidates and recruiters
+- **profile_unlocks**: Tracks which recruiters unlocked which candidates
+- **profile_views**: Tracks profile view analytics
 
-### Profile Unlocks Table
-```sql
-CREATE TABLE profile_unlocks (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  recruiter_id UUID REFERENCES profiles(id) NOT NULL,
-  candidate_id UUID REFERENCES profiles(id) NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(recruiter_id, candidate_id)
-);
-```
+Run the migrations in the `supabase/migrations` folder to set up your database.
 
-### Storage Bucket
-Create a storage bucket named `resumes` for PDF file uploads.
-
-## Deployment
+## 🚀 Deployment
 
 ### Frontend (Vercel)
 1. Connect your GitHub repository to Vercel
@@ -127,10 +97,88 @@ Create a storage bucket named `resumes` for PDF file uploads.
 ### Backend (Supabase)
 1. Create a new Supabase project
 2. Run the SQL migrations
-3. Set up storage bucket
-4. Deploy edge functions for AI parsing
+3. Set up storage bucket for resumes
 
-## Features Roadmap
+## 📁 Project Structure
+
+```
+├── app/                    # Next.js app directory
+│   ├── auth/              # Authentication pages
+│   ├── candidate/         # Candidate dashboard
+│   ├── recruiter/         # Recruiter dashboard
+│   └── api/               # API routes
+├── components/            # Reusable components
+│   ├── landing/          # Landing page components
+│   ├── ui/               # UI components
+│   └── dashboard/        # Dashboard components
+├── hooks/                # Custom React hooks
+├── utils/                # Utility functions
+├── types/                # TypeScript type definitions
+├── supabase/             # Database migrations
+└── middleware.ts         # Next.js middleware
+```
+
+## 🔐 Authentication Flow
+
+1. Users register as either candidates or recruiters
+2. Email/password authentication via Supabase
+3. Profile creation with user type
+4. Protected routes based on authentication status
+5. Role-based redirects to appropriate dashboards
+
+## 💳 Pricing Model
+
+- **Candidates**: Always free
+- **Recruiters**: 
+  - 10 free profile unlocks per month
+  - Additional unlocks via credit system
+  - Premium features for enterprise
+
+## 🛡 Security Features
+
+- Row Level Security (RLS) on all database tables
+- Protected API routes
+- File upload validation
+- Input sanitization
+- CSRF protection via Supabase
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+## 📈 Performance
+
+- Server-side rendering with Next.js
+- Image optimization
+- Code splitting
+- Lazy loading
+- Caching strategies
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 📞 Support
+
+For support, email hello@talentmatch.com or create an issue in the repository.
+
+## 🗺 Roadmap
 
 ### Phase 1 (MVP) ✅
 - Basic authentication and profiles
@@ -150,18 +198,3 @@ Create a storage bucket named `resumes` for PDF file uploads.
 - Enterprise features
 - Advanced reporting
 - Multi-language support
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For support, email hello@talentmatch.com or create an issue in the repository.
