@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata = {
   title: 'TalentMatch - AI-Powered Recruitment Platform',
   description: 'Connect top talent with leading companies through AI-powered matching',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

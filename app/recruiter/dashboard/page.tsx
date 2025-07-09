@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/app/providers'
-import { createBrowserClient } from '@supabase/ssr'
-import { Search, Filter, Users, CreditCard, Eye, Unlock, MapPin, Calendar, Star } from 'lucide-react'
+import { Search, Filter, Users, CreditCard, Eye, Unlock, MapPin, Calendar, Star, LogOut } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Candidate {
   id: string
@@ -30,7 +30,7 @@ interface RecruiterProfile {
 }
 
 export default function RecruiterDashboard() {
-  const { user } = useAuth()
+  const { user, loading: authLoading, signOut, supabase } = useAuth()
   const [profile, setProfile] = useState<RecruiterProfile | null>(null)
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,19 +40,17 @@ export default function RecruiterDashboard() {
     experience: '',
     jobType: 'any'
   })
-  
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const router = useRouter()
 
   useEffect(() => {
     if (user) {
       console.log('🔄 Fetching recruiter profile...')
       fetchProfile()
       searchCandidates()
+    } else if (!authLoading) {
+      router.push('/auth/login')
     }
-  }, [user])
+  }, [user, authLoading, router])
 
   const fetchProfile = async () => {
     try {
@@ -191,6 +189,19 @@ export default function RecruiterDashboard() {
     }
   }
 
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/')
+  }
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -215,6 +226,13 @@ export default function RecruiterDashboard() {
                 <span>Used: {profile?.unlocks_used || 0}/10</span>
               </div>
               <span className="text-gray-700">Welcome, {profile?.full_name}</span>
+              <button 
+                onClick={handleSignOut}
+                className="btn-secondary flex items-center"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </button>
             </div>
           </div>
         </div>
