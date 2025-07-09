@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/app/providers'
-import { createBrowserClient } from '@supabase/ssr'
-import { Upload, Eye, EyeOff, Shield, BarChart3, Settings, FileText, Users } from 'lucide-react'
+import { Upload, Eye, EyeOff, Shield, BarChart3, Settings, FileText, Users, LogOut } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Profile {
   id: string
@@ -21,22 +21,20 @@ interface Profile {
 }
 
 export default function CandidateDashboard() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, signOut, supabase } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
-  
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const router = useRouter()
 
   useEffect(() => {
     if (user) {
       console.log('🔄 Fetching candidate profile...')
       fetchProfile()
+    } else if (!authLoading) {
+      router.push('/auth/login')
     }
-  }, [user])
+  }, [user, authLoading, router])
 
   const fetchProfile = async () => {
     try {
@@ -147,6 +145,11 @@ export default function CandidateDashboard() {
     }
   }
 
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/')
+  }
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -171,9 +174,12 @@ export default function CandidateDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-700">Welcome, {profile?.full_name}</span>
-              <button className="btn-secondary">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
+              <button 
+                onClick={handleSignOut}
+                className="btn-secondary flex items-center"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </button>
             </div>
           </div>

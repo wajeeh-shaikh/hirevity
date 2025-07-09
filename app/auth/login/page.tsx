@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, Users, ArrowLeft } from 'lucide-react'
-import { createBrowserClient } from '@supabase/ssr'
+import { useAuth } from '@/app/providers'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -14,10 +14,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   
   const router = useRouter()
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const { supabase } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
