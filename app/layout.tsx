@@ -1,15 +1,14 @@
-import './globals.css'
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import './globals.css'
 import { Providers } from './providers'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
-  title: 'TalentMatch - AI-Powered Recruitment Platform',
-  description: 'Connect top talent with leading companies through AI-powered matching',
-  icons: {
-    icon: '/favicon.ico',
-  },
+export const metadata: Metadata = {
+  title: 'TalentMatch - Connect Talent with Opportunity',
+  description: 'A modern platform connecting talented professionals with great opportunities',
+  keywords: ['jobs', 'recruitment', 'talent', 'careers', 'hiring'],
 }
 
 export default function RootLayout({
