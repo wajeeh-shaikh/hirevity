@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/app/providers'
-import { Upload, Eye, EyeOff, Shield, BarChart3, Settings, FileText, Users, LogOut } from 'lucide-react'
+import { Eye, EyeOff, Shield, BarChart3, Settings, FileText, Users, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ResumeUpload } from '@/components/ui/ResumeUpload'
+import { ParsedResumeData } from '@/utils/resumeParser'
 
 interface Profile {
   id: string
@@ -24,7 +26,8 @@ export default function CandidateDashboard() {
   const { user, loading: authLoading, signOut, supabase } = useAuth()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [uploadSuccess, setUploadSuccess] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -58,71 +61,17 @@ export default function CandidateDashboard() {
     }
   }
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  const handleUploadSuccess = (data: ParsedResumeData) => {
+    console.log('✅ Resume upload successful:', data)
+    setUploadSuccess(true)
+    setUploadError('')
+    fetchProfile() // Refresh profile data
+  }
 
-    if (file.type !== 'application/pdf') {
-      alert('Please upload a PDF file')
-      return
-    }
-
-    setUploading(true)
-    try {
-      console.log('🔄 Uploading resume...')
-      
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user?.id}-${Date.now()}.${fileExt}`
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('resumes')
-        .upload(fileName, file)
-
-      if (uploadError) {
-        console.error('❌ Upload error:', uploadError)
-        throw uploadError
-      }
-
-      console.log('✅ File uploaded:', uploadData)
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(fileName)
-
-      console.log('📄 Public URL:', publicUrl)
-
-      // Update profile with resume URL
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ resume_url: publicUrl })
-        .eq('id', user?.id)
-
-      if (updateError) {
-        console.error('❌ Profile update error:', updateError)
-        throw updateError
-      }
-
-      console.log('✅ Profile updated with resume URL')
-
-      // Trigger AI parsing (this would be handled by an edge function)
-      try {
-        await supabase.functions.invoke('parse-resume', {
-          body: { userId: user?.id, resumeUrl: publicUrl }
-        })
-        console.log('🤖 AI parsing triggered')
-      } catch (parseError) {
-        console.log('⚠️ AI parsing not available yet')
-      }
-
-      fetchProfile()
-    } catch (error) {
-      console.error('Error uploading file:', error)
-      alert('Error uploading file. Please try again.')
-    } finally {
-      setUploading(false)
-    }
+  const handleUploadError = (error: string) => {
+    console.error('❌ Resume upload failed:', error)
+    setUploadError(error)
+    setUploadSuccess(false)
   }
 
   const toggleVisibility = async () => {
@@ -199,7 +148,9 @@ export default function CandidateDashboard() {
                     <FileText className="h-8 w-8 text-green-600 mr-3" />
                     <div>
                       <p className="font-medium text-green-900">Resume uploaded</p>
-                      <p className="text-sm text-green-700">AI parsing completed</p>
+                      <p className="text-sm text-green-700">
+                        {profile.resume_parsed ? 'AI parsing completed' : 'Processing...'}
+                      </p>
                     </div>
                   </div>
                   <div className="flex space-x-2">
@@ -211,33 +162,39 @@ export default function CandidateDashboard() {
                     >
                       View
                     </a>
-                    <label className="btn-primary text-sm cursor-pointer">
-                      Replace
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        disabled={uploading}
+                    <div>
+                      <ResumeUpload
+                        userId={user?.id || ''}
+                        onUploadSuccess={handleUploadSuccess}
+                        onUploadError={handleUploadError}
+                        supabase={supabase}
+                        className="inline-block"
                       />
-                    </label>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Upload your resume</h3>
-                  <p className="text-gray-600 mb-4">PDF format only. Our AI will parse your skills and experience.</p>
-                  <label className="btn-primary cursor-pointer">
-                    {uploading ? 'Uploading...' : 'Choose PDF file'}
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      disabled={uploading}
-                    />
-                  </label>
+                <ResumeUpload
+                  userId={user?.id || ''}
+                  onUploadSuccess={handleUploadSuccess}
+                  onUploadError={handleUploadError}
+                  supabase={supabase}
+                />
+              )}
+              
+              {uploadSuccess && (
+                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    ✅ Resume uploaded and parsed successfully! Your profile has been updated.
+                  </p>
+                </div>
+              )}
+              
+              {uploadError && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">
+                    ❌ {uploadError}
+                  </p>
                 </div>
               )}
             </div>
